@@ -88,13 +88,13 @@ def interpolate(y, new_length):
 
 
 r_filt = dsp.ExpFilter(np.tile(0.01, config.N_PIXELS // 2),
-                       alpha_decay=0.3, alpha_rise=0.3)
+                       alpha_decay=0.05, alpha_rise=0.3)
 g_filt = dsp.ExpFilter(np.tile(0.01, config.N_PIXELS // 2),
-                       alpha_decay=0.99, alpha_rise=0.99)
+                       alpha_decay=0.3, alpha_rise=0.99)
 b_filt = dsp.ExpFilter(np.tile(0.01, config.N_PIXELS // 2),
-                       alpha_decay=0.4, alpha_rise=0.5)
+                       alpha_decay=0.1, alpha_rise=0.5)
 common_mode = dsp.ExpFilter(np.tile(0.01, config.N_PIXELS // 2),
-                       alpha_decay=0.99, alpha_rise=0.02)
+                       alpha_decay=0.99, alpha_rise=0.01)
 p_filt = dsp.ExpFilter(np.tile(1, (3, config.N_PIXELS // 2)),
                        alpha_decay=0.1, alpha_rise=0.99)
 p = np.tile(1.0, (3, config.N_PIXELS // 2))
@@ -166,7 +166,7 @@ def visualize_spectrum(y):
     _prev_spectrum = np.copy(y)
     # Color channel mappings
     r = r_filt.update(y - common_mode.value)
-    g = g_filt.update(np.copy(y))
+    g = g_filt.update(y - common_node.value)
     b = b_filt.update(np.copy(y))
     # Mirror the color channels for symmetric output
     r = np.concatenate((r[::-1], r))

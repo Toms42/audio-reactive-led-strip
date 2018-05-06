@@ -3,8 +3,9 @@ import numpy as np
 import pyaudio
 import config
 
-
+prev_ovf_time = time.time();
 def start_stream(callback):
+    global prev_ovf_time
     p = pyaudio.PyAudio()
     frames_per_buffer = int(config.MIC_RATE / config.FPS)
     stream = p.open(format=pyaudio.paInt16,
@@ -13,11 +14,14 @@ def start_stream(callback):
                     input=True,
                     frames_per_buffer=frames_per_buffer)
     overflows = 0
-    prev_ovf_time = time.time()
+    
     while True:
         try:
-            y = np.fromstring(stream.read(frames_per_buffer), dtype=np.int16)
+            y = np.fromstring(stream.read(frames_per_buffer, exception_on_overflow=False), dtype=np.int16)
             y = y.astype(np.float32)
+            if time.time() > prev_ovf_time + 1:
+                prev_ovf_time = time.time()
+                stream.read(stream.get_read_available(),exception_on_overflow=False)
             callback(y)
         except IOError:
             overflows += 1
